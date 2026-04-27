@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pájaros cantores · Prueba sonora</title>
+<style>
+body{margin:0;padding:16px;background:transparent;box-sizing:border-box}
+#sopa-aves{--papel1:#eef4e8;--papel2:#d9e6cf;--tinta:#33422f;--suave:#5b6b56;--borde:#8aa06e;--borde2:#667a50;--sel:#d9e7f5;--selb:#89add1;--ok:#dceccf;--okb:#7c9c69;--hint:#fff3b0;--hintb:#d4a017;max-width:860px;margin:0 auto;padding:24px;border:2px solid var(--borde);border-radius:18px;box-sizing:border-box;color:var(--tinta);font-family:Georgia,"Times New Roman",serif;background:radial-gradient(circle at top left, rgba(255,255,255,.42), transparent 28%),radial-gradient(circle at bottom right, rgba(90,120,60,.08), transparent 26%),linear-gradient(180deg,var(--papel1) 0%,var(--papel2) 100%);box-shadow:0 10px 30px rgba(52,70,44,.16)}
+#sopa-aves .head{text-align:center;margin-bottom:18px}
+#sopa-aves .title{margin:0;font-size:1.9rem;color:var(--borde2)}
+#sopa-aves .sub{margin:8px 0 0;color:var(--suave);font-style:italic}
+#sopa-aves .actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+#sopa-aves .btn{border:1px solid var(--borde2);background:linear-gradient(180deg,#8faa68 0%,#738a52 100%);color:#f9fff3;font-family:Georgia,"Times New Roman",serif;font-size:1rem;font-weight:700;padding:10px 18px;border-radius:999px;cursor:pointer}
+#sopa-aves .board-wrap{display:flex;justify-content:center}
+#sopa-aves .board{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;width:min(570px,100%);max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+#sopa-aves .cell{aspect-ratio:1/1;min-width:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,250,.88);border:1px solid rgba(102,122,80,.42);border-radius:8px;font-weight:700;font-size:1rem;line-height:1;box-sizing:border-box;transition:background .2s,border-color .2s}
+#sopa-aves .cell.sel{background:var(--sel);border-color:var(--selb)}
+#sopa-aves .cell.found{background:var(--ok);border-color:var(--okb);color:#314728}
+#sopa-aves .cell.hint{background:var(--hint);border-color:var(--hintb)}
+#sopa-aves .panel{margin-top:18px;padding:18px;background:rgba(255,255,250,.55);border:1px solid rgba(102,122,80,.25);border-radius:14px}
+#sopa-aves .flash{min-height:30px;margin-bottom:8px;font-weight:700;color:#2f6a2f}
+#sopa-aves .end{margin:10px 0;padding:12px 14px;border-radius:12px;background:rgba(226,241,215,.88);border:1px solid rgba(124,156,105,.5);color:#31552c;font-weight:700;display:none;text-align:center}
+#sopa-aves .remain{margin-bottom:14px;color:var(--suave)}
+#sopa-aves .label{font-weight:700;color:var(--borde2);margin-bottom:10px}
+#sopa-aves .foundlist{display:grid;gap:10px}
+#sopa-aves .item{background:rgba(255,255,248,.82);border:1px solid rgba(138,160,110,.35);border-radius:12px;padding:10px 12px}
+#sopa-aves .w{font-weight:700;margin-bottom:4px}
+#sopa-aves .d{color:var(--suave);line-height:1.35}
+#sopa-aves .modes{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+#sopa-aves .intro{
+  margin:0 auto 18px auto;
+  max-width:680px;
+  padding:16px;
+  background:rgba(255,255,250,.55);
+  border:1px solid rgba(102,122,80,.25);
+  border-radius:14px;
+  color:var(--suave);
+  line-height:1.45;
+  text-align:center;
+}
+#sopa-aves .secret-wrap{
+  text-align:center;
+  margin:18px 0 24px 0;
+}
+
+#sopa-aves .secret-box,
+#sopa-aves .isabel-letter{
+  margin:14px auto 0 auto;
+  max-width:720px;
+  padding:16px;
+  background:rgba(255,255,250,.65);
+  border:1px solid rgba(102,122,80,.25);
+  border-radius:14px;
+  color:var(--suave);
+  line-height:1.45;
+  text-align:left;
+}
+
+#sopa-aves .secret-box{
+  text-align:center;
+}
+
+#sopa-aves .secret-input{
+  padding:10px 12px;
+  border:1px solid var(--borde);
+  border-radius:10px;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:1rem;
+  max-width:220px;
+  width:100%;
+  box-sizing:border-box;
+}
+
+#sopa-aves .secret-msg{
+  margin-top:10px;
+  font-weight:700;
+  color:#8a6845;
+}
+@media (max-width:640px){body{padding:8px}#sopa-aves{padding:10px;border-radius:14px}#sopa-aves .title{font-size:1.45rem}#sopa-aves .sub,#sopa-aves .remain,#sopa-aves .d{font-size:.92rem}#sopa-aves .board{gap:3px}#sopa-aves .cell{font-size:.8rem;border-radius:6px}#sopa-aves .panel{padding:14px}#sopa-aves .btn{width:100%;max-width:280px;font-size:.96rem;padding:10px 14px}}
+</style>
+</head>
+<body>
+<div id="sopa-aves">
+  <div class="head">
+    <h3 class="title">Pájaros cantores</h3>
+    <p class="sub">Escucha, busca y nombra a las aves ocultas.</p>
+  </div>
+  <div class="secret-wrap">
+  <button class="btn" id="isabelBtn" type="button">Isabel</button>
+
+  <div id="secretBox" class="secret-box" style="display:none;">
+    <p><strong>Introduce la contraseña:</strong></p>
+    <input type="password" id="secretInput" class="secret-input">
+    <button class="btn" id="secretOpenBtn" type="button">Abrir</button>
+    <div id="secretMsg" class="secret-msg"></div>
+  </div>
+
+  <div id="isabelLetter" class="isabel-letter" style="display:none;">
+    <p>Hola, querida Isabel.</p>
+    <p>En este juego, podrás identificar el canto de diez de las aves que escuchamos habitualmente en parques y jardines, en los bosques y en las montañas. Sus nombres en español están escondidos en una sopa de letras. Pero, una vez que los descubras, sabrás también sus nombres en francés. Y podrás oír su canto y acceder a enlaces en ambos idiomas con fotografías y mucha información 😅.</p>
+    <p>Lo mejor es empezar con el Modo 0. Los nombres de los pájaros los puedes encontrar escritos en horizontal, vertical o diagonal, en ambos sentidos. Desliza el dedo o el cursor por las letras hasta que encuentres los diez nombres, que a ti te los digo: <strong>MIRLO, PETIRROJO, JILGUERO, RUISEÑOR, CARBONERO, VERDECILLO, PINZÓN, CURRUCA, ALONDRA</strong> y <strong>HERRERILLO</strong> 🙂.</p>
+    <p>Cuando los tengas señalados, toca “Comenzar de nuevo” y elige el Modo 3, luego el 2, y finalmente el 1. Si encuentras los diez pájaros a la primera en el Modo 1, habrás alcanzado el objetivo del juego 👏👏👏.</p>
+    <p>De todas formas, puedes cambiar de Modo en cualquier momento, pero ten en cuenta que al tocar “Comenzar de nuevo” pierdes lo que ya habías hecho. Mientras no lo toques, podrás retomarlo en el punto donde lo dejaste. ¡No hace falta hacerlo todo de un tirón!</p>
+    <p>¡Ah, se me olvidaba! El botón de Isabel solo es para ti, porque tiene contraseña (“lebasi”, tu nombre al revés), para que lo puedas compartir sin que los demás vean esto que te estoy escribiendo 😜.</p>
+    <p>¡Que disfrutes!</p>
+    <p><strong>¡Feliz cumpleaños! 🎂 🥳❤️</strong></p>
+    <p>De parte de Elo, el 28 de abril de 2026.</p>
+  </div>
+</div>
+  <div class="modes" id="modeBox">
+    <button class="btn" id="mode0Btn" type="button">Modo 0</button>
+    <button class="btn" id="mode1Btn" type="button">Modo 1</button>
+    <button class="btn" id="mode2Btn" type="button">Modo 2</button>
+    <button class="btn" id="mode3Btn" type="button">Modo 3</button>
+  </div>
+  <div class="intro" id="introBox">
+    <p><strong>Elige un modo de juego para comenzar.</strong></p>
+    <p>En cada turno recibirás ninguna, una o varias pistas. Después deberás encontrar en la sopa el pájaro correspondiente.</p>
+    <p><strong>Modo 0:</strong> sin pistas. <strong>Modo 1:</strong> solo canto. <strong>Modo 2:</strong> canto y definición. <strong>Modo 3:</strong> tres pistas.</p>
+  </div>
+  <div id="gameWrap" style="display:none;">
+  <div class="actions" id="gameActions" style="display:none;">
+    <button class="btn" id="resetBtn" type="button">Comenzar de nuevo</button>
+    <button class="btn" id="shuffleBtn" type="button">Recolocar letras</button>
+    <button class="btn" id="hintBtn" type="button">Pista</button>
+  </div>
+  <div class="board-wrap"><div class="board" id="board"></div></div>
+  <div class="panel">
+    <div class="flash" id="flash"></div>
+    <div class="end" id="end"></div>
+    <div class="remain" id="remain"></div>
+    <div class="label">Aves encontradas</div>
+    <div class="foundlist" id="foundlist"></div>
+  </div></div>
+</div>
+<script>
+(function(){
+  var STORAGE_KEY="sopa_aves_prueba_5_v1";
+  var ROWS=12,COLS=10;
+  var LETTERS="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+  var DIRS = [[1,1],[1,-1],[-1,1],[-1,-1],[0,1],[1,0],[0,-1],[-1,0]];
+  var MSGS = [
+  "Très bien !",
+  "Bravo !",
+  "Fantastique !",
+  "Excellent !",
+  "Super !",
+  "Magnifique !",
+  "Félicitations !",
+  "Bien joué !"
+];
+  var WORDS = [
+  {
+    word: "MIRLO",
+    def: "Ave común de canto fluido y melodioso.",
+    audio: "https://xeno-canto.org/1075801/download",
+    link: "https://seo.org/ave/mirlo-comun/",
+    fr: "merle noir",
+    fr_link: "https://www.oiseaux.net/oiseaux/merle.noir.html"
+  },
+  {
+    word: "PETIRROJO",
+    def: "Ave pequeña de canto fino y delicado.",
+    audio: "https://xeno-canto.org/1062223/download",
+    link: "https://seo.org/ave/petirrojo-europeo/",
+    fr: "rouge-gorge",
+    fr_link: "https://www.oiseaux.net/oiseaux/rougegorge.familier.html"
+  },
+  {
+    word: "JILGUERO",
+    def: "Ave de canto rápido y brillante.",
+    audio: "https://xeno-canto.org/378401/download",
+    link: "https://seo.org/ave/jilguero-europeo/",
+    fr: "chardonneret élégant",
+    fr_link: "https://www.oiseaux.net/oiseaux/chardonneret.elegant.html"
+  },
+  {
+    word: "RUISEÑOR",
+    def: "Ave de canto rico, variado y muy musical.",
+    audio: "https://xeno-canto.org/992438/download",
+    link: "https://seo.org/ave/ruisenor-comun/",
+    fr: "rossignol philomèle",
+    fr_link: "https://www.oiseaux.net/oiseaux/rossignol.philomele.html"
+  },
+  {
+    word: "CARBONERO",
+    def: "Ave inquieta de canto repetitivo y vivo.",
+    audio: "https://xeno-canto.org/956887/download",
+    link: "https://seo.org/ave/carbonero-garrapinos/",
+    fr: "mésange charbonnière",
+    fr_link: "https://www.oiseaux.net/oiseaux/mesange.charbonniere.html"
+  },
+  {
+    word: "VERDECILLO",
+    def: "Ave pequeña de canto rápido y continuo, casi eléctrico.",
+    audio: "https://xeno-canto.org/42290/download",
+    link: "https://seo.org/ave/serin-verdecillo/",
+    fr: "serin cini",
+    fr_link: "https://www.oiseaux.net/oiseaux/serin.cini.html"
+  },
+  {
+    word: "PINZÓN",
+    def: "Ave de canto claro y estructurado, fácil de reconocer.",
+    audio: "https://xeno-canto.org/1040177/download",
+    link: " https://seo.org/ave/pinzon-vulgar/",
+    fr: "pinson des arbres",
+    fr_link: "https://www.oiseaux.net/oiseaux/pinson.des.arbres.html"
+  },
+  {
+    word: "CURRUCA",
+    def: "Ave discreta de canto suave y algo escondido.",
+    audio: "https://xeno-canto.org/358370/download",
+    link: "https://seo.org/ave/curruca-mosquitera/",
+    fr: "fauvette à tête noire",
+    fr_link: "https://www.oiseaux.net/oiseaux/fauvette.a.tete.noire.html"
+  },
+  {
+    word: "ALONDRA",
+    def: "Ave de canto prolongado y fluido, como suspendido en el aire.",
+    audio: "https://xeno-canto.org/1012349/download",
+    link: "https://seo.org/ave/alondra-comun/",
+    fr: "alouette des champs",
+    fr_link: "https://www.oiseaux.net/oiseaux/alouette.des.champs.html"
+  },
+  {
+    word: "HERRERILLO",
+    def: "Ave vivaz de canto agudo y juguetón.",
+    audio: "https://xeno-canto.org/694882/download",
+    link: "https://seo.org/ave/herrerillo-comun/",
+    fr: "mésange bleue",
+    fr_link: "https://www.oiseaux.net/oiseaux/mesange.bleue.html"
+  }
+];
+  var FINAL_MESSAGE="Los cantos ya tenían nombre.";
+
+  var board=[],placed=[],found=[],selecting=false,start=null,path=[],timer=null,hintTarget=null,hintLevel=0,rotateNext=false,currentAudio=null;
+  var gameMode=null;
+  var maxHints=3;
+
+  function randMsg(){return MSGS[Math.floor(Math.random()*MSGS.length)];}
+  function randLetter(){return LETTERS.charAt(Math.floor(Math.random()*LETTERS.length));}
+  function prettyBird(w){if(w==="RUISENOR") return "Ruiseñor"; return w.charAt(0)+w.slice(1).toLowerCase();}
+  function saveProgress(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({found:found}));}catch(e){}}
+  function loadProgress(){try{var raw=localStorage.getItem(STORAGE_KEY); if(!raw) return false; var data=JSON.parse(raw); if(Array.isArray(data.found)) found=data.found.slice(); return true;}catch(e){return false;}}
+  function clearProgress(){try{localStorage.removeItem(STORAGE_KEY);}catch(e){}}
+  function stopAudio(){if(currentAudio){try{currentAudio.pause(); currentAudio.currentTime=0;}catch(e){} currentAudio=null;}}
+  function playAudio(url){stopAudio(); currentAudio=new Audio(url); currentAudio.play().catch(function(){flash("No se ha podido reproducir el audio en este momento.",2600);});}
+
+  function shuffle(arr){var a=arr.slice(),i,j,t; for(i=a.length-1;i>0;i--){j=Math.floor(Math.random()*(i+1)); t=a[i]; a[i]=a[j]; a[j]=t;} return a;}
+  function emptyBoard(){var b=[],r,c; for(r=0;r<ROWS;r++){b[r]=[]; for(c=0;c<COLS;c++) b[r][c]="";} return b;}
+  function canPlace(b,w,row,col,dr,dc){var i,rr,cc; for(i=0;i<w.length;i++){rr=row+dr*i; cc=col+dc*i; if(rr<0||rr>=ROWS||cc<0||cc>=COLS) return false; if(b[rr][cc]!=="" && b[rr][cc]!==w.charAt(i)) return false;} return true;}
+
+  function countDiagonals(placedWords){
+    var i, cells, dr, dc, total = 0;
+
+    for(i = 0; i < placedWords.length; i++){
+      cells = placedWords[i].cells;
+      if(!cells || cells.length < 2) continue;
+
+      dr = cells[1][0] - cells[0][0];
+      dc = cells[1][1] - cells[0][1];
+
+    if(Math.abs(dr) === 1 && Math.abs(dc) === 1){
+      total++;
+    }
+  }
+
+  return total;
+}
+
+  function buildSoup(keepFound){
+  var previousFound = keepFound ? found.slice() : [];
+  var attempt, bestBoard = null, bestPlaced = null, bestDiag = -1;
+  var targetDiagonals = 2;
+  var maxGlobalAttempts = 20;
+
+  for(attempt = 0; attempt < maxGlobalAttempts; attempt++){
+    var tries = 0, ok = false, words, b, p, i, t, dir, row, col, w, cells, k, rr, cc;
+
+    while(!ok && tries < 80){
+      tries++;
+      b = emptyBoard();
+      p = [];
+      words = shuffle(WORDS.map(function(x){ return x.word; }))
+        .sort(function(a,b){ return b.length - a.length; });
+      ok = true;
+
+      for(i = 0; i < words.length; i++){
+        w = words[i];
+        var placedNow = false;
+
+        for(t = 0; t < 1600; t++){
+          dir = DIRS[Math.floor(Math.random() * DIRS.length)];
+          row = Math.floor(Math.random() * ROWS);
+          col = Math.floor(Math.random() * COLS);
+
+          if(!canPlace(b, w, row, col, dir[0], dir[1])) continue;
+
+          cells = [];
+          for(k = 0; k < w.length; k++){
+            rr = row + dir[0] * k;
+            cc = col + dir[1] * k;
+            b[rr][cc] = w.charAt(k);
+            cells.push([rr, cc]);
+          }
+
+          p.push({word:w, cells:cells});
+          placedNow = true;
+          break;
+        }
+
+        if(!placedNow){
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    if(!ok) continue;
+
+    for(i = 0; i < ROWS; i++){
+      for(t = 0; t < COLS; t++){
+        if(b[i][t] === "") b[i][t] = randLetter();
+      }
+    }
+
+    var diagCount = countDiagonals(p);
+
+    if(diagCount > bestDiag){
+      bestDiag = diagCount;
+      bestBoard = b;
+      bestPlaced = p;
+    }
+
+    if(diagCount >= targetDiagonals){
+      break;
+    }
+  }
+
+  if(!bestBoard || !bestPlaced){
+    throw new Error("No se ha podido generar la sopa.");
+  }
+
+  board = bestBoard;
+  placed = bestPlaced;
+  found = keepFound ? previousFound.filter(function(word){
+    return WORDS.some(function(item){ return item.word === word; });
+  }) : [];
+  path = [];
+  selecting = false;
+  start = null;
+  hintTarget = null;
+  hintLevel = 0;
+  rotateNext = false;
+  clearHints();
+  stopAudio();
+}
+
+  function drawBoard(){var g=document.getElementById("board"),html="",r,c; for(r=0;r<ROWS;r++){for(c=0;c<COLS;c++){html+='<div class="cell" data-r="'+r+'" data-c="'+c+'">'+board[r][c]+'</div>';}} g.innerHTML=html; paintFound();}
+  function cellEl(r,c){return document.querySelector('.cell[data-r="'+r+'"][data-c="'+c+'"]');}
+  function clearSel(){var i,el; for(i=0;i<path.length;i++){el=cellEl(path[i][0],path[i][1]); if(el && !el.classList.contains("found")) el.classList.remove("sel");}}
+  function clearHints(){var hints=document.querySelectorAll(".cell.hint"),i; for(i=0;i<hints.length;i++) hints[i].classList.remove("hint");}
+  function setPath(p){var i,el; clearSel(); path=p.slice(); for(i=0;i<path.length;i++){el=cellEl(path[i][0],path[i][1]); if(el && !el.classList.contains("found")) el.classList.add("sel");}}
+  function line(a,b){var r1=a[0],c1=a[1],r2=b[0],c2=b[1],dr=Math.sign(r2-r1),dc=Math.sign(c2-c1),sameRow=r1===r2,sameCol=c1===c2,diag=Math.abs(r2-r1)===Math.abs(c2-c1),len,out=[],i; if(!(sameRow||sameCol||diag)) return [a]; len=Math.max(Math.abs(r2-r1),Math.abs(c2-c1))+1; for(i=0;i<len;i++) out.push([r1+dr*i,c1+dc*i]); return out;}
+  function pathWord(p){var s="",i; for(i=0;i<p.length;i++) s+=board[p[i][0]][p[i][1]]; return s;}
+  function eqPath(a,b){var i; if(!a||!b||a.length!==b.length) return false; for(i=0;i<a.length;i++){if(a[i][0]!==b[i][0]||a[i][1]!==b[i][1]) return false;} return true;}
+  function rev(p){return p.slice().reverse();}
+  function hasFound(w){return found.indexOf(w)!==-1;}
+  function meta(w){var i; for(i=0;i<WORDS.length;i++) if(WORDS[i].word===w) return WORDS[i]; return null;}
+  function flash(txt,ms){var f=document.getElementById("flash"); f.textContent=txt; if(timer) clearTimeout(timer); if(ms!==999999){timer=setTimeout(function(){f.textContent="";},ms||3200);}}
+  function updateRemain(){document.getElementById("remain").textContent="Te quedan "+(WORDS.length-found.length)+" pájaro"+((WORDS.length-found.length)===1?"":"s")+".";}
+  function updateList(){
+  var i, out = "";
+
+  for(i = 0; i < WORDS.length; i++){
+    if(hasFound(WORDS[i].word)){
+      out += '<div class="item">' +
+               '<div class="w">' +
+                 '<a href="' + WORDS[i].link + '" target="_blank">' +
+                  prettyBird(WORDS[i].word) +
+                '</a>' +
+                ' — <a href="' + WORDS[i].fr_link + '" target="_blank">' +
+                  '<em style="color:#5b6b56;">' + WORDS[i].fr + '</em>' +
+                '</a>' +
+               '</div>' +
+               '<div class="d">' + WORDS[i].def + '</div>' +
+               '<button onclick="playAudio(\'' + WORDS[i].audio + '\')">🔊 Escuchar</button>' +
+             '</div>';
+    }
+  }
+
+  document.getElementById("foundlist").innerHTML = out;
+}
+  function updateEnd(){var end=document.getElementById("end"); if(found.length!==WORDS.length){end.style.display="none"; return;} end.style.display="block"; end.textContent=FINAL_MESSAGE;}
+  function paintFound(){var i,j,el; for(i=0;i<placed.length;i++){if(!hasFound(placed[i].word)) continue; for(j=0;j<placed[i].cells.length;j++){el=cellEl(placed[i].cells[j][0],placed[i].cells[j][1]); if(el){el.classList.remove("sel"); el.classList.add("found");}}}}
+  function markWrong(match){
+  var i, el;
+
+  for(i = 0; i < match.cells.length; i++){
+    el = cellEl(match.cells[i][0], match.cells[i][1]);
+    if(el){
+      el.classList.add("sel");
+    }
+  }
+
+  setTimeout(function(){
+    for(i = 0; i < match.cells.length; i++){
+      el = cellEl(match.cells[i][0], match.cells[i][1]);
+      if(el){
+        el.classList.remove("sel");
+      }
+    }
+  }, 2200);
+}
+  function conceptualHintForWord(word){var map={"MIRLO":"Ave común de jardín y canto fluido.","PETIRROJO":"Ave pequeña de aspecto delicado y voz fina.","JILGUERO":"Ave de canto brillante y muy reconocible.","RUISENOR":"Famoso por su canto rico y melodioso.","CARBONERO":"Ave activa de canto repetitivo y vivo."}; return map[word]||"Ave cantora.";}
+
+  function startMode(mode){
+  gameMode = mode;
+  maxHints = mode;
+
+  if(mode === 0){
+    flash("Modo 0: no puedes utilizar pistas.", 999999);
+  }
+
+  if(mode === 1){
+    flash("Modo 1: solo puedes escuchar el canto de los pájaros.", 999999);
+  }
+
+  if(mode === 2){
+    flash("Modo 2: dispones de canto y definición.", 999999);
+  }
+
+  if(mode === 3){
+    flash("Modo 3: dispones de tres pistas.", 999999);
+  }
+
+  document.getElementById("modeBox").style.display = "none";
+  document.getElementById("introBox").style.display = "none";
+  document.getElementById("isabelLetter").style.display = "none";
+  document.getElementById("secretBox").style.display = "none";
+  document.getElementById("secretInput").value = "";
+  document.getElementById("gameWrap").style.display = "block";
+  document.getElementById("gameActions").style.display = "flex";
+
+  var hintBtn = document.getElementById("hintBtn");
+
+  if(mode === 0){
+    hintBtn.style.display = "none";
+  }else{
+    hintBtn.style.display = "";
+  }
+}
+  
+  function showHint(){
+    var pending=placed.filter(function(item){return !hasFound(item.word);});
+      if(gameMode === null){
+    flash("Elige primero un modo de juego.", 2200);
+    return;
+  }
+
+  if(maxHints === 0){
+    flash("En este modo no puedes utilizar pistas.", 2200);
+    return;
+  }
+    var chosen,metaWord,cell,r,c,el,texto;
+    if(found.length===WORDS.length){flash("Ya has encontrado todas las aves.",2200); return;}
+    if(!pending.length){flash("No quedan aves por encontrar.",2200); return;}
+    if(hintLevel >= maxHints){hintTarget=null; hintLevel=0; rotateNext=true; clearHints(); stopAudio();}
+    if(!hintTarget || hasFound(hintTarget.word)){hintTarget=pending[Math.floor(Math.random()*pending.length)];}
+    chosen=hintTarget; metaWord=meta(chosen.word);
+
+    if(hintLevel===0){
+      clearHints();
+      texto="Pista sonora: escucha el canto.";
+      if(rotateNext){texto="Vale, probemos con otro pájaro. "+texto; rotateNext=false;}
+      flash(texto,999999);
+      playAudio(metaWord.audio);
+    } else if(hintLevel===1){
+      clearHints(); stopAudio();
+      flash("Pista: "+metaWord.def,999999);
+    } else if(hintLevel===2){
+      clearHints(); stopAudio();
+      cell=chosen.cells[Math.floor(Math.random()*chosen.cells.length)];
+      for(r=cell[0]-1;r<=cell[0]+1;r++){for(c=cell[1]-1;c<=cell[1]+1;c++){el=cellEl(r,c); if(el && !el.classList.contains("found")) el.classList.add("hint");}}
+      flash("Pista: el nombre está cerca de la zona iluminada.",999999);
+    }
+    hintLevel++;
+  }
+
+  function complete(match){
+    var i,el,m;
+    if(hasFound(match.word)) return;
+    found.push(match.word);
+    for(i=0;i<match.cells.length;i++){el=cellEl(match.cells[i][0],match.cells[i][1]); if(el){el.classList.remove("sel"); el.classList.remove("hint"); el.classList.add("found");}}
+    path=[]; hintTarget=null; hintLevel=0; rotateNext=false; clearHints(); stopAudio();
+    updateList(); updateRemain(); updateEnd(); saveProgress();
+    if(found.length===WORDS.length){flash(randMsg()+" "+FINAL_MESSAGE,4200); return;}
+    m=meta(match.word); if(m) flash(randMsg()+" "+prettyBird(m.word)+": "+m.def,3200);
+  }
+
+  function resolve(){
+    var selected=pathWord(path),i,item,reversed,match=null;
+    if(!path.length) return;
+    for(i=0;i<placed.length;i++){
+      item=placed[i];
+      if(hasFound(item.word)) continue;
+      reversed=item.word.split("").reverse().join("");
+      if(eqPath(path,item.cells)||eqPath(path,rev(item.cells))||selected===item.word||selected===reversed){match=item; break;}
+    }
+    if(gameMode !== 0 && !hintTarget){
+    flash("Antes de señalar una palabra, pide al menos una pista.", 2200);
+    clearSel();
+    path = [];
+    return;
+  }
+    if(match){
+
+  // 🚨 NUEVA LÓGICA
+  if(hintTarget && match.word !== hintTarget.word){
+    markWrong(match);
+    flash("No es ese pájaro. Encuentra otro.", 1800);
+    clearSel();
+    path = [];
+    return;
+  }
+
+  complete(match);
+
+} else {
+  setTimeout(function(){ clearSel(); path = []; }, 120);
+}
+  }
+
+  function renderAll(){drawBoard(); updateRemain(); updateList(); updateEnd();}
+  function bind(){
+    var g=document.getElementById("board");
+    
+    document.getElementById("mode0Btn").onclick=function(){ startMode(0); };
+    document.getElementById("mode1Btn").onclick=function(){ startMode(1); };
+    document.getElementById("mode2Btn").onclick=function(){ startMode(2); };
+    document.getElementById("mode3Btn").onclick=function(){ startMode(3); };
+    document.getElementById("isabelBtn").onclick = function(){
+      var box = document.getElementById("secretBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    };
+
+    document.getElementById("secretOpenBtn").onclick = function(){
+      var value = document.getElementById("secretInput").value.trim().toLowerCase();
+      var msg = document.getElementById("secretMsg");
+
+      if(value === "lebasi"){
+        document.getElementById("secretBox").style.display = "none";
+        document.getElementById("isabelLetter").style.display = "block";
+        msg.textContent = "";
+      }else{
+      msg.textContent = "Contraseña incorrecta.";
+      }
+    };
+
+    document.getElementById("secretInput").addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        document.getElementById("secretOpenBtn").click();
+      }
+    });
+    document.getElementById("resetBtn").onclick=function(){
+      found=[];
+      gameMode=null;
+      maxHints=3;
+      clearProgress();
+      buildSoup(false);
+      renderAll();
+      saveProgress();
+
+    document.getElementById("modeBox").style.display = "flex";
+    document.getElementById("introBox").style.display = "block";
+    document.getElementById("gameWrap").style.display = "none";
+    document.getElementById("isabelLetter").style.display = "none";
+    document.getElementById("secretBox").style.display = "none";
+    document.getElementById("secretInput").value = "";
+    document.getElementById("gameActions").style.display = "none";
+    document.getElementById("hintBtn").style.display = "";
+      flash("Elige un modo de juego.", 999999);
+};
+    document.getElementById("shuffleBtn").onclick=function(){buildSoup(true); renderAll(); saveProgress(); flash("Las letras se han recolocado.",2200);};
+    document.getElementById("hintBtn").onclick=function(){showHint();};
+    g.onpointerdown=function(e){var cell=e.target.closest(".cell"); if(!cell) return; selecting=true; start=[parseInt(cell.getAttribute("data-r"),10),parseInt(cell.getAttribute("data-c"),10)]; setPath([start]);};
+    g.onpointermove=function(e){var elem,cell,end; if(!selecting||!start) return; elem=document.elementFromPoint(e.clientX,e.clientY); if(!elem) return; cell=elem.closest(".cell"); if(!cell) return; end=[parseInt(cell.getAttribute("data-r"),10),parseInt(cell.getAttribute("data-c"),10)]; setPath(line(start,end));};
+    document.onpointerup=function(){if(!selecting) return; selecting=false; resolve(); start=null;};
+  }
+
+  loadProgress();
+  buildSoup(true);
+  renderAll();
+  bind();
+
+  window.playAudio = playAudio;
+
+  flash("Elige un modo de juego.", 999999);
+})();
+</script>
+</body>
+</html>
